@@ -7,13 +7,18 @@ export interface StudentRecord {
   t1item150: string; // Email
   t1item160: string; // RegistrationDate
   t1item170: string; // DOB
-  t1item180: string; // TotalCourses
-  t1item190: string; // TotalCredits
   t1item200: string; // GPA
 }
 
 export interface GradeEntry {
-  [key: string]: string | number;
+  t2key120: string;   // StudentID
+  t2item130: string;  // Course_Code
+  t2item140: string;  // Course_Description
+  t2item150: string;  // Course_Date
+  t2item160: string;  // Course_Professor
+  t2item170: string;  // Credit
+  t2item180: string;  // Score
+  t2item190: string;  // Grade
 }
 
 export interface StudentData {
@@ -24,7 +29,5 @@ export interface StudentData {
   email: string;
   registrationDate: string;
   dob: string;
-  totalCourses: string;
-  totalCredits: string;
   gpa: string;
 }
