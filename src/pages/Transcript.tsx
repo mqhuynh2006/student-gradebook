@@ -15,7 +15,6 @@ import {
   Mail, 
   Calendar, 
   Award,
-  Hash,
   Loader2
 } from 'lucide-react';
 import { GradeEntry } from '@/types/student';
@@ -24,7 +23,6 @@ const Transcript = () => {
   const { student, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [grades, setGrades] = useState<GradeEntry[]>([]);
-  const [gradeHeaders, setGradeHeaders] = useState<string[]>([]);
   const [loadingGrades, setLoadingGrades] = useState(true);
 
   useEffect(() => {
@@ -44,25 +42,26 @@ const Transcript = () => {
         if (snapshot.exists()) {
           const data = snapshot.val();
           const entries: GradeEntry[] = [];
-          let headers: string[] = [];
           
-          // Get header from key "0"
-          if (data['0']) {
-            headers = Object.values(data['0']) as string[];
-          }
-          
-          // Get student's grades - match by StudentID
           for (const key of Object.keys(data)) {
-            if (key === '0') continue;
+            if (key === '0') continue; // Skip header row
             const entry = data[key];
-            // Check if this grade belongs to the logged-in student
-            const entryStudentId = String(Object.values(entry)[0] || '').trim();
+            // Match by t2key120 == studentID
+            const entryStudentId = String(entry.t2key120 || '').trim();
             if (entryStudentId === String(student.studentId).trim()) {
-              entries.push(entry);
+              entries.push({
+                t2key120: entry.t2key120,
+                t2item130: entry.t2item130,
+                t2item140: entry.t2item140,
+                t2item150: entry.t2item150,
+                t2item160: entry.t2item160,
+                t2item170: entry.t2item170,
+                t2item180: entry.t2item180,
+                t2item190: entry.t2item190,
+              });
             }
           }
           
-          setGradeHeaders(headers);
           setGrades(entries);
         }
       } catch (error) {
@@ -90,17 +89,27 @@ const Transcript = () => {
 
   if (!student) return null;
 
-  const InfoItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-      <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-gold-dark" />
+  const isValidValue = (value: string | undefined): boolean => {
+    if (!value) return false;
+    const trimmed = value.trim().toLowerCase();
+    return trimmed !== '' && trimmed !== 'unavailable';
+  };
+
+  const InfoItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => {
+    if (!isValidValue(value)) return null;
+    
+    return (
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+        <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-gold-dark" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
+          <p className="text-foreground font-medium truncate">{value}</p>
+        </div>
       </div>
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-        <p className="text-foreground font-medium truncate">{value || 'N/A'}</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -151,8 +160,6 @@ const Transcript = () => {
               <InfoItem icon={Phone} label="Phone" value={student.phone} />
               <InfoItem icon={Calendar} label="Registration Date" value={student.registrationDate} />
               <InfoItem icon={Calendar} label="Date of Birth" value={student.dob} />
-              <InfoItem icon={Hash} label="Total Courses" value={student.totalCourses} />
-              <InfoItem icon={Hash} label="Total Credits" value={student.totalCredits} />
               <InfoItem icon={Award} label="GPA" value={student.gpa} />
             </div>
           </CardContent>
@@ -176,21 +183,25 @@ const Transcript = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
-                      {gradeHeaders.map((header, index) => (
-                        <TableHead key={index} className="font-semibold text-foreground whitespace-nowrap">
-                          {header}
-                        </TableHead>
-                      ))}
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap">Course Code</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap">Description</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap">Date</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap">Professor</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap text-center">Credit</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap text-center">Score</TableHead>
+                      <TableHead className="font-semibold text-foreground whitespace-nowrap text-center">Grade</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {grades.map((grade, rowIndex) => (
                       <TableRow key={rowIndex} className="hover:bg-muted/30 transition-colors">
-                        {Object.values(grade).map((value, cellIndex) => (
-                          <TableCell key={cellIndex} className="whitespace-nowrap">
-                            {String(value)}
-                          </TableCell>
-                        ))}
+                        <TableCell className="whitespace-nowrap font-medium">{grade.t2item130}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">{grade.t2item140}</TableCell>
+                        <TableCell className="whitespace-nowrap">{grade.t2item150}</TableCell>
+                        <TableCell className="whitespace-nowrap">{grade.t2item160}</TableCell>
+                        <TableCell className="whitespace-nowrap text-center">{grade.t2item170}</TableCell>
+                        <TableCell className="whitespace-nowrap text-center">{grade.t2item180}</TableCell>
+                        <TableCell className="whitespace-nowrap text-center font-semibold">{grade.t2item190}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

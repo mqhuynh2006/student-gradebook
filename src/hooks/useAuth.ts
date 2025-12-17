@@ -51,8 +51,6 @@ export const useAuth = () => {
             email: record.t1item150,
             registrationDate: record.t1item160,
             dob: record.t1item170,
-            totalCourses: record.t1item180,
-            totalCredits: record.t1item190,
             gpa: record.t1item200,
           };
           
